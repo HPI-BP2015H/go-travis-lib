@@ -44,11 +44,13 @@ func NewClient(travisAccessToken string, httpClient *http.Client) *Client {
 func (c *Client) NewRequest(method, urlStr string) (*http.Request, error) {
 	rel, err := url.Parse(urlStr)
 	if err != nil {
+		println("Error in url parse")
 		return nil, err
 	}
 	u := c.BaseURL.ResolveReference(rel)
 	req, err := http.NewRequest(method, u.String(), nil)
 	if err != nil {
+		println("Error in http new request")
 		return nil, err
 	}
 
@@ -61,7 +63,7 @@ func (c *Client) NewRequest(method, urlStr string) (*http.Request, error) {
 func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	resp, err := c.client.Do(req)
 	if err != nil {
-		println("Error inside Do1")
+		println("Error in http client do")
 		return nil, err
 	}
 	defer func() {
@@ -73,14 +75,17 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 
 	err = CheckResponse(resp)
 	if err != nil {
+		println("Check Response failed")
 		// even though there was an error, we still return the response
 		// in case the caller wants to inspect it further
 		return response, err
 	}
+	// DEBUG
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
 	s := buf.String() //
 	println("Body: " + s)
+	// END DEBUG
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
 			io.Copy(w, resp.Body)
@@ -88,17 +93,22 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 			err = json.NewDecoder(resp.Body).Decode(v)
 			if err == io.EOF {
 				err = nil // ignore EOF errors caused by empty response body
+			} else if err != nil {
+				println(err)
 			}
 		}
 	}
+
+	println(v)
 
 	return response, err
 }
 
 func CheckResponse(r *http.Response) error {
 	if c := r.StatusCode; 200 <= c && c <= 299 {
-		println("HTTP Respnse superb")
+		println("HTTP Status 2XX")
 		return nil
 	}
-	return errors.New("bad http response: " + strconv.Itoa(r.StatusCode))
+	println("HTTP Status not in 2XX")
+	return errors.New("HTTP Response: " + strconv.Itoa(r.StatusCode))
 }

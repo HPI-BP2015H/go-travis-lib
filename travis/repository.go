@@ -5,13 +5,13 @@ type RepositoryService struct {
 }
 
 type Repository struct {
-	ID             *int    `json:"id,omitempty"`
-	Name           *string `json:"name,omitempty"`
-	Slug           *string `json:"slug,omitempty"`
-	Description    *string `json:"description,omitempty"`
-	GithubLanguage *string `json:"github_language,omitempty"`
-	Active         *bool   `json:"active,omitempty"`
-	Private        *bool   `json:"private,omitempty"`
+	ID          *int    `json:"id,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	Slug        *string `json:"slug,omitempty"`
+	Description *string `json:"description,omitempty"`
+	//	GithubLanguage *string `json:"github_language,omitempty"`
+	//	Active         *bool   `json:"active,omitempty"`
+	//	Private        *bool   `json:"private,omitempty"`
 	//Owner          *string //*Owner
 	//DefaultBranch  *string //*Branch
 	//Starred        *string //Unknown
@@ -21,14 +21,13 @@ func (r *RepositoryService) List() []Repository {
 
 	req, err := r.client.NewRequest("GET", "repos")
 	if err != nil {
-		println("Error during new request")
+		println("Error in new request")
 		return nil
 	}
 	repos := new([]Repository)
-	resp, err := r.client.Do(req, repos)
-	println(resp) // TODO: remove
+	_, err = r.client.Do(req, repos)
 	if err != nil {
-		println("Error during travisclient.Do")
+		println("Error during in travis client do")
 		return nil
 	}
 	return *repos
