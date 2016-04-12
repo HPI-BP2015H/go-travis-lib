@@ -1,7 +1,6 @@
 package travis
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
@@ -80,27 +79,12 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 		// in case the caller wants to inspect it further
 		return response, err
 	}
-	// DEBUG
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
-	s := buf.String() //
-	println("Body: " + s)
-	// END DEBUG
-	if v != nil {
-		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
-		} else {
-			err = json.NewDecoder(resp.Body).Decode(v)
-			if err == io.EOF {
-				err = nil // ignore EOF errors caused by empty response body
-			} else if err != nil {
-				println(err)
-			}
-		}
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		println("Cannot read resp.Body")
+		return response, err
 	}
-
-	println(v)
-
+	json.Unmarshal(bytes, &v)
 	return response, err
 }
 

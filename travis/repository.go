@@ -30,5 +30,6 @@ func (r *RepositoryService) List() []Repository {
 		println("Error during in travis client do")
 		return nil
 	}
+
 	return *repos
 }
